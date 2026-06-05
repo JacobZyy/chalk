@@ -16,6 +16,8 @@ export type {
   CreateChalkOptions,
   CustomColorMap,
   FormattedText,
+  LogHook,
+  LogHookContext,
   LogLevelDefinition,
   LogMethod,
   PublicColorName,

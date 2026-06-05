@@ -1,4 +1,4 @@
-import type { ChalkInstance, ConsoleLike, CreateChalkOptions, DebugPredicate } from './types'
+import type { ChalkInstance, ConsoleLike, CreateChalkOptions, DebugPredicate, LogHook } from './types'
 import { createBannerMethods } from './banner'
 import { createColorMap } from './colors'
 import { add, bgColor, bold, color } from './format'
@@ -30,14 +30,17 @@ export function createChalk(options: CreateChalkOptions = {}): ChalkInstance {
   const colors = createColorMap(options.colors)
   const isDebug = resolveDebugPredicate(options.isDebug)
   const banner = createBannerMethods(consoleLike, isDebug)
+  const hooks: LogHook[] = []
+  const getHooks = (): readonly LogHook[] => hooks
   const loggers = createLoggerMethods({
     console: consoleLike,
     colors,
     isDebug,
     logLevels: options.logLevels,
+    getHooks,
   })
 
-  return {
+  const instance: ChalkInstance = {
     add,
     bold,
     ...banner,
@@ -67,5 +70,11 @@ export function createChalk(options: CreateChalkOptions = {}): ChalkInstance {
     info: loggers.info,
     event: loggers.event,
     debug: loggers.debug,
+    use(hook: LogHook): ChalkInstance {
+      hooks.push(hook)
+      return instance
+    },
   }
+
+  return instance
 }

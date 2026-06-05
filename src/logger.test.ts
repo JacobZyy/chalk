@@ -13,6 +13,8 @@ function createConsoleSpy(): Required<ConsoleLike> {
   }
 }
 
+const emptyHooks = () => [] as const
+
 const BG = 'background:rgba(0,0,0,0.15);padding:0 2px;border-radius:2px'
 
 describe('logger', () => {
@@ -22,6 +24,7 @@ describe('logger', () => {
       console: consoleSpy,
       colors: createColorMap(),
       isDebug: () => false,
+      getHooks: emptyHooks,
     })
 
     logger.ready('server started')
@@ -35,6 +38,7 @@ describe('logger', () => {
       console: consoleSpy,
       colors: createColorMap(),
       isDebug: () => true,
+      getHooks: emptyHooks,
     })
 
     logger.ready('server started')
@@ -52,6 +56,7 @@ describe('logger', () => {
       console: consoleSpy,
       colors: createColorMap(),
       isDebug: () => true,
+      getHooks: emptyHooks,
     })
 
     logger.error('failed', { code: 500 })
@@ -70,6 +75,7 @@ describe('logger', () => {
       console: { log },
       colors: createColorMap(),
       isDebug: () => true,
+      getHooks: emptyHooks,
     })
 
     logger.warn('careful')
@@ -87,6 +93,7 @@ describe('logger', () => {
       console: consoleSpy,
       colors: createColorMap({ trace: '#123456' }),
       isDebug: () => true,
+      getHooks: emptyHooks,
       logLevels: [
         {
           name: 'trace',

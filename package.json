@@ -1,7 +1,7 @@
 {
   "name": "@jacob-z/chalk",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Browser console coloring utilities compatible with alita/chalk behavior.",
   "license": "MIT",
   "sideEffects": false,

@@ -1,4 +1,4 @@
-import type { ConsoleLike, ConsoleMethodName, DebugPredicate, LogLevelDefinition, LogMethod } from './types'
+import type { ConsoleLike, ConsoleMethodName, DebugPredicate, LogHook, LogHookContext, LogLevelDefinition, LogMethod } from './types'
 import { getForegroundStyle } from './colors'
 
 export const DEFAULT_LOG_LEVELS = [
@@ -17,6 +17,7 @@ export interface CreateLoggerMethodsOptions {
   colors: Readonly<Record<string, string>>
   isDebug: DebugPredicate
   logLevels?: readonly LogLevelDefinition[]
+  getHooks: () => readonly LogHook[]
 }
 
 function getConsoleMethod(consoleLike: ConsoleLike, method: ConsoleMethodName): (...data: unknown[]) => void {
@@ -28,14 +29,31 @@ function createLogMethod(
   colors: Readonly<Record<string, string>>,
   isDebug: DebugPredicate,
   level: LogLevelDefinition,
+  getHooks: () => readonly LogHook[],
 ): LogMethod {
   return (message: string, ...args: unknown[]): void => {
-    if (!isDebug())
-      return
-    const method = getConsoleMethod(consoleLike, level.method)
-    const labelStyle = `${getForegroundStyle(colors, level.color)};font-weight: bold;`
-    const messageStyle = getForegroundStyle(colors, level.color)
-    method(`%c[${level.label}]%c ${message}`, labelStyle, messageStyle, ...args)
+    const debugValue = isDebug()
+
+    if (debugValue) {
+      const method = getConsoleMethod(consoleLike, level.method)
+      const labelStyle = `${getForegroundStyle(colors, level.color)};font-weight: bold;`
+      const messageStyle = getForegroundStyle(colors, level.color)
+      method(`%c[${level.label}]%c ${message}`, labelStyle, messageStyle, ...args)
+    }
+
+    const hooks = getHooks()
+    if (hooks.length > 0) {
+      const ctx: LogHookContext = {
+        level: level.name,
+        label: level.label,
+        message,
+        args,
+        isDebug: debugValue,
+      }
+      for (const hook of hooks) {
+        hook(ctx)
+      }
+    }
   }
 }
 
@@ -44,7 +62,7 @@ export function createLoggerMethods(options: CreateLoggerMethodsOptions): Record
   return Object.fromEntries(
     levels.map(level => [
       level.name,
-      createLogMethod(options.console, options.colors, options.isDebug, level),
+      createLogMethod(options.console, options.colors, options.isDebug, level, options.getHooks),
     ]),
   )
 }

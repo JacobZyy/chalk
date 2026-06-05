@@ -47,6 +47,16 @@ export type TextFormatter = (text: string) => FormattedText
 
 export type LogMethod = (message: string, ...args: unknown[]) => void
 
+export interface LogHookContext {
+  level: string
+  label: string
+  message: string
+  args: unknown[]
+  isDebug: boolean
+}
+
+export type LogHook = (ctx: LogHookContext) => void
+
 export interface ChalkInstance {
   add: (...items: readonly FormattedText[]) => FormattedText
   bold: TextFormatter
@@ -78,4 +88,5 @@ export interface ChalkInstance {
   bgWhite: TextFormatter
   color: (name: string, text: string) => FormattedText
   bgColor: (name: string, text: string) => FormattedText
+  use: (hook: LogHook) => ChalkInstance
 }
