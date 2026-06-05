@@ -1,6 +1,5 @@
 import type { ConsoleLike } from './types'
 import { describe, expect, it, vi } from 'vitest'
-import { createColorMap } from './colors'
 import { createLoggerMethods } from './logger'
 
 function createConsoleSpy(): Required<ConsoleLike> {
@@ -15,14 +14,12 @@ function createConsoleSpy(): Required<ConsoleLike> {
 
 const emptyHooks = () => [] as const
 
-const BG = 'background:rgba(0,0,0,0.15);padding:0 2px;border-radius:2px'
-
 describe('logger', () => {
   it('does not log when debug is false', () => {
     const consoleSpy = createConsoleSpy()
     const logger = createLoggerMethods({
       console: consoleSpy,
-      colors: createColorMap(),
+      mode: 'background',
       isDebug: () => false,
       getHooks: emptyHooks,
     })
@@ -32,39 +29,60 @@ describe('logger', () => {
     expect(consoleSpy.log).not.toHaveBeenCalled()
   })
 
-  it('logs ready messages with bold green [Ready] label and colored message', () => {
+  it('logs ready messages in background mode with unified style', () => {
     const consoleSpy = createConsoleSpy()
     const logger = createLoggerMethods({
       console: consoleSpy,
-      colors: createColorMap(),
+      mode: 'background',
       isDebug: () => true,
       getHooks: emptyHooks,
     })
 
     logger.ready('server started')
 
+    const bgStyle = 'padding: 2px 4px; border-radius: 3px; color: #24273a; font-weight: bold; background:#a6da95;'
     expect(consoleSpy.log).toHaveBeenCalledWith(
       '%c[Ready]%c server started',
-      `color:#a6e3a1;${BG};font-weight: bold;`,
-      `color:#a6e3a1;${BG}`,
+      bgStyle,
+      bgStyle,
     )
   })
 
-  it('uses console.error for error messages with bold red label', () => {
+  it('logs ready messages in foreground mode with unified style', () => {
     const consoleSpy = createConsoleSpy()
     const logger = createLoggerMethods({
       console: consoleSpy,
-      colors: createColorMap(),
+      mode: 'foreground',
+      isDebug: () => true,
+      getHooks: emptyHooks,
+    })
+
+    logger.ready('server started')
+
+    const fgStyle = 'color:#a6da95'
+    expect(consoleSpy.log).toHaveBeenCalledWith(
+      '%c[Ready]%c server started',
+      fgStyle,
+      fgStyle,
+    )
+  })
+
+  it('uses console.error for error messages with unified style', () => {
+    const consoleSpy = createConsoleSpy()
+    const logger = createLoggerMethods({
+      console: consoleSpy,
+      mode: 'background',
       isDebug: () => true,
       getHooks: emptyHooks,
     })
 
     logger.error('failed', { code: 500 })
 
+    const bgStyle = 'padding: 2px 4px; border-radius: 3px; color: #24273a; font-weight: bold; background:#ed8796;'
     expect(consoleSpy.error).toHaveBeenCalledWith(
       '%c[Error]%c failed',
-      `color:#f38ba8;${BG};font-weight: bold;`,
-      `color:#f38ba8;${BG}`,
+      bgStyle,
+      bgStyle,
       { code: 500 },
     )
   })
@@ -73,43 +91,18 @@ describe('logger', () => {
     const log = vi.fn()
     const logger = createLoggerMethods({
       console: { log },
-      colors: createColorMap(),
+      mode: 'background',
       isDebug: () => true,
       getHooks: emptyHooks,
     })
 
     logger.warn('careful')
 
+    const bgStyle = 'padding: 2px 4px; border-radius: 3px; color: #24273a; font-weight: bold; background:#eed49f;'
     expect(log).toHaveBeenCalledWith(
       '%c[Warn]%c careful',
-      `color:#f9e2af;${BG};font-weight: bold;`,
-      `color:#f9e2af;${BG}`,
-    )
-  })
-
-  it('supports custom log levels and colors', () => {
-    const consoleSpy = createConsoleSpy()
-    const logger = createLoggerMethods({
-      console: consoleSpy,
-      colors: createColorMap({ trace: '#123456' }),
-      isDebug: () => true,
-      getHooks: emptyHooks,
-      logLevels: [
-        {
-          name: 'trace',
-          label: 'Trace',
-          color: 'trace',
-          method: 'debug',
-        },
-      ],
-    })
-
-    logger.trace('details')
-
-    expect(consoleSpy.debug).toHaveBeenCalledWith(
-      '%c[Trace]%c details',
-      `color:#123456;${BG};font-weight: bold;`,
-      `color:#123456;${BG}`,
+      bgStyle,
+      bgStyle,
     )
   })
 })

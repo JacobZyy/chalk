@@ -1,20 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { createColorMap } from './colors'
-import { add, bgColor, bold, color } from './format'
-
-const colors = createColorMap()
-
-const BG = 'background:rgba(0,0,0,0.15);padding:0 2px;border-radius:2px'
+import { add, bold, coloredText } from './format'
 
 describe('format', () => {
-  it('formats foreground text with original %c tuple', () => {
-    expect(color(colors, 'red', 'text')).toEqual(['%ctext', `color:#f38ba8;${BG}`])
+  it('formats foreground colored text', () => {
+    expect(coloredText('red', 'text', 'foreground')).toEqual(['%ctext', 'color:#ed8796'])
   })
 
-  it('formats background text with original %c tuple', () => {
-    expect(bgColor(colors, 'red', 'text')).toEqual([
+  it('formats background colored text', () => {
+    expect(coloredText('red', 'text', 'background')).toEqual([
       '%ctext',
-      'padding: 2px 4px; border-radius: 3px; color: #1e1e2e; font-weight: bold; background:#f38ba8;',
+      'padding: 2px 4px; border-radius: 3px; color: #24273a; font-weight: bold; background:#ed8796;',
     ])
   })
 
@@ -22,11 +17,11 @@ describe('format', () => {
     expect(bold('text')).toEqual(['%ctext', 'font-weight: bold;'])
   })
 
-  it('merges multiple formatted tuples using the original add shape', () => {
-    expect(add(color(colors, 'red', 'a'), color(colors, 'blue', 'b'))).toEqual([
+  it('merges multiple formatted tuples', () => {
+    expect(add(coloredText('red', 'a', 'foreground'), coloredText('blue', 'b', 'foreground'))).toEqual([
       ' %ca %cb',
-      `color:#f38ba8;${BG}`,
-      `color:#89b4fa;${BG}`,
+      'color:#ed8796',
+      'color:#8aadf4',
     ])
   })
 

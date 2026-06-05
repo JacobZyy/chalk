@@ -25,21 +25,21 @@ export type PublicColorName = Exclude<ColorName, 'gray'>
 
 export type ColorMap = Readonly<Record<ColorName, string>>
 
-export type CustomColorMap = Readonly<Record<string, string>>
+export type ChalkMode = 'foreground' | 'background'
 
 export type DebugPredicate = () => boolean
 
 export interface LogLevelDefinition {
   name: string
   label: string
-  color: ColorName | string
+  color: ColorName
   method: ConsoleMethodName
 }
 
 export interface CreateChalkOptions {
   console?: ConsoleLike
+  mode?: ChalkMode
   isDebug?: boolean | DebugPredicate
-  colors?: CustomColorMap
   logLevels?: readonly LogLevelDefinition[]
 }
 
@@ -86,7 +86,5 @@ export interface ChalkInstance {
   bgMagenta: TextFormatter
   bgCyan: TextFormatter
   bgWhite: TextFormatter
-  color: (name: string, text: string) => FormattedText
-  bgColor: (name: string, text: string) => FormattedText
   use: (hook: LogHook) => ChalkInstance
 }

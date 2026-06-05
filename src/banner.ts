@@ -12,8 +12,8 @@ export function createBannerMethods(consoleLike: ConsoleLike, isDebug: DebugPred
         return
       consoleLike.log(
         `%c ${title} %c V${version} `,
-        'padding: 2px 1px; border-radius: 3px 0 0 3px; color: #cdd6f4; background: #45475a; font-weight: bold;',
-        'padding: 2px 1px; border-radius: 0 3px 3px 0; color: #1e1e2e; background: #a6e3a1; font-weight: bold;',
+        'padding: 2px 1px; border-radius: 3px 0 0 3px; color: #cad3f5; background: #494d64; font-weight: bold;',
+        'padding: 2px 1px; border-radius: 0 3px 3px 0; color: #24273a; background: #a6da95; font-weight: bold;',
       )
     },
     image(url: string): void {

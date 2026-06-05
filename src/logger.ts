@@ -1,5 +1,5 @@
-import type { ConsoleLike, ConsoleMethodName, DebugPredicate, LogHook, LogHookContext, LogLevelDefinition, LogMethod } from './types'
-import { getForegroundStyle } from './colors'
+import type { ChalkMode, ConsoleLike, ConsoleMethodName, DebugPredicate, LogHook, LogHookContext, LogLevelDefinition, LogMethod } from './types'
+import { DEFAULT_COLORS, getStyle } from './colors'
 
 export const DEFAULT_LOG_LEVELS = [
   { name: 'log', label: 'Log', color: 'black', method: 'log' },
@@ -14,7 +14,7 @@ export const DEFAULT_LOG_LEVELS = [
 
 export interface CreateLoggerMethodsOptions {
   console: ConsoleLike
-  colors: Readonly<Record<string, string>>
+  mode: ChalkMode
   isDebug: DebugPredicate
   logLevels?: readonly LogLevelDefinition[]
   getHooks: () => readonly LogHook[]
@@ -26,9 +26,9 @@ function getConsoleMethod(consoleLike: ConsoleLike, method: ConsoleMethodName): 
 
 function createLogMethod(
   consoleLike: ConsoleLike,
-  colors: Readonly<Record<string, string>>,
   isDebug: DebugPredicate,
   level: LogLevelDefinition,
+  mode: ChalkMode,
   getHooks: () => readonly LogHook[],
 ): LogMethod {
   return (message: string, ...args: unknown[]): void => {
@@ -36,9 +36,8 @@ function createLogMethod(
 
     if (debugValue) {
       const method = getConsoleMethod(consoleLike, level.method)
-      const labelStyle = `${getForegroundStyle(colors, level.color)};font-weight: bold;`
-      const messageStyle = getForegroundStyle(colors, level.color)
-      method(`%c[${level.label}]%c ${message}`, labelStyle, messageStyle, ...args)
+      const style = getStyle(DEFAULT_COLORS, level.color, mode)
+      method(`%c[${level.label}]%c ${message}`, style, style, ...args)
     }
 
     const hooks = getHooks()
@@ -62,7 +61,7 @@ export function createLoggerMethods(options: CreateLoggerMethodsOptions): Record
   return Object.fromEntries(
     levels.map(level => [
       level.name,
-      createLogMethod(options.console, options.colors, options.isDebug, level, options.getHooks),
+      createLogMethod(options.console, options.isDebug, level, options.mode, options.getHooks),
     ]),
   )
 }

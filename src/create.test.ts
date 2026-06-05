@@ -12,23 +12,23 @@ function createConsoleSpy(): Required<ConsoleLike> {
   }
 }
 
-const BG = 'background:rgba(0,0,0,0.15);padding:0 2px;border-radius:2px'
-
 describe('createChalk', () => {
-  it('creates foreground and background methods for original public colors', () => {
+  it('creates foreground and background methods', () => {
     const chalk = createChalk({ isDebug: false })
 
-    expect(chalk.red('text')).toEqual(['%ctext', `color:#f38ba8;${BG}`])
+    expect(chalk.red('text')).toEqual(['%ctext', 'color:#ed8796'])
     expect(chalk.bgRed('text')).toEqual([
       '%ctext',
-      'padding: 2px 4px; border-radius: 3px; color: #1e1e2e; font-weight: bold; background:#f38ba8;',
+      'padding: 2px 4px; border-radius: 3px; color: #24273a; font-weight: bold; background:#ed8796;',
     ])
   })
 
-  it('dark foreground colors get no background', () => {
+  it('foreground methods output pure color without background', () => {
     const chalk = createChalk({ isDebug: false })
 
-    expect(chalk.black('text')).toEqual(['%ctext', 'color:#1e1e2e'])
+    expect(chalk.black('text')).toEqual(['%ctext', 'color:#24273a'])
+    expect(chalk.red('text')).toEqual(['%ctext', 'color:#ed8796'])
+    expect(chalk.blue('text')).toEqual(['%ctext', 'color:#8aadf4'])
   })
 
   it('exposes add and bold helpers', () => {
@@ -37,15 +37,34 @@ describe('createChalk', () => {
     expect(chalk.bold('text')).toEqual(['%ctext', 'font-weight: bold;'])
     expect(chalk.add(chalk.red('a'), chalk.blue('b'))).toEqual([
       ' %ca %cb',
-      `color:#f38ba8;${BG}`,
-      `color:#89b4fa;${BG}`,
+      'color:#ed8796',
+      'color:#8aadf4',
     ])
   })
 
-  it('uses injected console and debug predicate for loggers', () => {
+  it('uses injected console and debug predicate for loggers in background mode', () => {
     const consoleSpy = createConsoleSpy()
     const chalk = createChalk({
       console: consoleSpy,
+      mode: 'background',
+      isDebug: () => true,
+    })
+
+    chalk.info('loaded')
+
+    const bgStyle = 'padding: 2px 4px; border-radius: 3px; color: #24273a; font-weight: bold; background:#8aadf4;'
+    expect(consoleSpy.info).toHaveBeenCalledWith(
+      '%c[Info]%c loaded',
+      bgStyle,
+      bgStyle,
+    )
+  })
+
+  it('uses foreground mode for loggers when mode is foreground', () => {
+    const consoleSpy = createConsoleSpy()
+    const chalk = createChalk({
+      console: consoleSpy,
+      mode: 'foreground',
       isDebug: () => true,
     })
 
@@ -53,23 +72,25 @@ describe('createChalk', () => {
 
     expect(consoleSpy.info).toHaveBeenCalledWith(
       '%c[Info]%c loaded',
-      `color:#89b4fa;${BG};font-weight: bold;`,
-      `color:#89b4fa;${BG}`,
+      'color:#8aadf4',
+      'color:#8aadf4',
     )
   })
 
-  it('uses custom colors through generic color helpers', () => {
+  it('defaults to background mode', () => {
+    const consoleSpy = createConsoleSpy()
     const chalk = createChalk({
-      isDebug: false,
-      colors: {
-        brand: '#123456',
-      },
+      console: consoleSpy,
+      isDebug: () => true,
     })
 
-    expect(chalk.color('brand', 'custom')).toEqual(['%ccustom', `color:#123456;${BG}`])
-    expect(chalk.bgColor('brand', 'custom')).toEqual([
-      '%ccustom',
-      'padding: 2px 4px; border-radius: 3px; color: #1e1e2e; font-weight: bold; background:#123456;',
-    ])
+    chalk.ready('started')
+
+    const bgStyle = 'padding: 2px 4px; border-radius: 3px; color: #24273a; font-weight: bold; background:#a6da95;'
+    expect(consoleSpy.log).toHaveBeenCalledWith(
+      '%c[Ready]%c started',
+      bgStyle,
+      bgStyle,
+    )
   })
 })

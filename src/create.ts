@@ -1,7 +1,6 @@
 import type { ChalkInstance, ConsoleLike, CreateChalkOptions, DebugPredicate, LogHook } from './types'
 import { createBannerMethods } from './banner'
-import { createColorMap } from './colors'
-import { add, bgColor, bold, color } from './format'
+import { add, bold, coloredText } from './format'
 import { createLoggerMethods } from './logger'
 
 const noopConsole: ConsoleLike = {
@@ -27,41 +26,42 @@ function resolveDebugPredicate(isDebug: CreateChalkOptions['isDebug']): DebugPre
 
 export function createChalk(options: CreateChalkOptions = {}): ChalkInstance {
   const consoleLike = resolveConsole(options.console)
-  const colors = createColorMap(options.colors)
+  const mode = options.mode ?? 'background'
   const isDebug = resolveDebugPredicate(options.isDebug)
   const banner = createBannerMethods(consoleLike, isDebug)
   const hooks: LogHook[] = []
   const getHooks = (): readonly LogHook[] => hooks
   const loggers = createLoggerMethods({
     console: consoleLike,
-    colors,
+    mode,
     isDebug,
     logLevels: options.logLevels,
     getHooks,
   })
 
+  const fg = (name: string) => (text: string) => coloredText(name, text, 'foreground')
+  const bg = (name: string) => (text: string) => coloredText(name, text, 'background')
+
   const instance: ChalkInstance = {
     add,
     bold,
     ...banner,
-    black: text => color(colors, 'black', text),
-    red: text => color(colors, 'red', text),
-    green: text => color(colors, 'green', text),
-    yellow: text => color(colors, 'yellow', text),
-    blue: text => color(colors, 'blue', text),
-    magenta: text => color(colors, 'magenta', text),
-    cyan: text => color(colors, 'cyan', text),
-    white: text => color(colors, 'white', text),
-    bgBlack: text => bgColor(colors, 'black', text),
-    bgRed: text => bgColor(colors, 'red', text),
-    bgGreen: text => bgColor(colors, 'green', text),
-    bgYellow: text => bgColor(colors, 'yellow', text),
-    bgBlue: text => bgColor(colors, 'blue', text),
-    bgMagenta: text => bgColor(colors, 'magenta', text),
-    bgCyan: text => bgColor(colors, 'cyan', text),
-    bgWhite: text => bgColor(colors, 'white', text),
-    color: (name, text) => color(colors, name, text),
-    bgColor: (name, text) => bgColor(colors, name, text),
+    black: fg('black'),
+    red: fg('red'),
+    green: fg('green'),
+    yellow: fg('yellow'),
+    blue: fg('blue'),
+    magenta: fg('magenta'),
+    cyan: fg('cyan'),
+    white: fg('white'),
+    bgBlack: bg('black'),
+    bgRed: bg('red'),
+    bgGreen: bg('green'),
+    bgYellow: bg('yellow'),
+    bgBlue: bg('blue'),
+    bgMagenta: bg('magenta'),
+    bgCyan: bg('cyan'),
+    bgWhite: bg('white'),
     log: loggers.log,
     wait: loggers.wait,
     error: loggers.error,

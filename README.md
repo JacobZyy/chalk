@@ -1,19 +1,19 @@
 # @jacob-z/chalk
 
-Browser console coloring utilities — a modular, type-safe rewrite of `@alita/chalk`, themed with [Catppuccin Mocha](https://catppuccin.com/palette/).
+Browser console coloring utilities — a modular, type-safe rewrite of `@alita/chalk`, themed with [Catppuccin Macchiato](https://catppuccin.com/palette/).
 
 ## Features
 
 - `%c` CSS tuple formatters for browser DevTools console output
 - 9 foreground colors: `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`, `gray`
 - 8 background colors: `bgBlack`, `bgRed`, `bgGreen`, `bgYellow`, `bgBlue`, `bgMagenta`, `bgCyan`, `bgWhite`
-- Light foreground colors automatically get a subtle dark background for readability in dark-mode consoles
+- Mode switching (`foreground` / `background`) controls logger output style globally
 - `bold()` text formatting
 - `add()` for merging multiple formatted tuples
 - Debug-gated logger methods: `log`, `wait`, `error`, `warn`, `ready`, `info`, `event`, `debug`
 - `hello(title, version)` version banner
 - `image(url)` console image
-- `createChalk(options?)` factory for dependency injection and custom colors
+- `createChalk(options?)` factory for dependency injection
 - Zero runtime dependencies, fully tree-shakeable
 
 ## Install
@@ -30,19 +30,16 @@ Color formatters return `console.log`-ready tuples:
 import chalk from '@jacob-z/chalk'
 
 chalk.red('text')
-// → ['%ctext', 'color:#f38ba8']
-
-chalk.yellow('text')
-// → ['%ctext', 'color:#f9e2af;background:rgba(0,0,0,0.15);padding:0 2px;border-radius:2px']
+// → ['%ctext', 'color:#ed8796']
 
 chalk.bgRed('text')
-// → ['%ctext', 'padding: 2px 4px; border-radius: 3px; color: #1e1e2e; font-weight: bold; background:#f38ba8;']
+// → ['%ctext', 'padding: 2px 4px; border-radius: 3px; color: #24273a; font-weight: bold; background:#ed8796;']
 
 chalk.bold('text')
 // → ['%ctext', 'font-weight: bold;']
 
 chalk.add(chalk.red('a'), chalk.blue('b'))
-// → [' %ca %cb', 'color:#f38ba8', 'color:#89b4fa']
+// → [' %ca %cb', 'color:#ed8796', 'color:#8aadf4']
 ```
 
 Use with `console.log` spread:
@@ -51,6 +48,35 @@ Use with `console.log` spread:
 console.log(...chalk.red('colored text'))
 console.log(...chalk.add(chalk.red('error:'), chalk.bold(' not found')))
 ```
+
+### Foreground vs Background Methods
+
+- **Foreground** (`red`, `green`, `blue`, …) — pure `color:<hex>`, no background or padding
+- **Background** (`bgRed`, `bgGreen`, `bgBlue`, …) — `background:<hex>; color:#24273a; font-weight: bold; padding: 2px 4px; border-radius: 3px;`
+- **bgBlack** special case — dark base background with blue text `#8aadf4`
+
+These are fixed regardless of the `mode` setting. Mode only affects logger output.
+
+## Mode Switching
+
+`createChalk({ mode })` controls how logger methods render. Default is `'background'`.
+
+```ts
+import { createChalk } from '@jacob-z/chalk'
+
+const bgChalk = createChalk({ console, mode: 'background', isDebug: true })
+const fgChalk = createChalk({ console, mode: 'foreground', isDebug: true })
+
+// background mode: label + message share same styled background
+bgChalk.info('loaded')
+// → %c[Info]%c loaded   (both segments use background style)
+
+// foreground mode: label + message share same foreground color
+fgChalk.info('loaded')
+// → %c[Info]%c loaded   (both segments use color:<hex> only)
+```
+
+Logger label and message body use the **same style** — no separate styling for the tag vs the content.
 
 ## Debug Logging
 
@@ -87,32 +113,22 @@ chalk.info('loaded')
 
 If a console method is unavailable, the logger falls back to `console.log`.
 
-## Custom Colors
-
-```ts
-import { createChalk } from '@jacob-z/chalk'
-
-const chalk = createChalk({
-  colors: { brand: '#123456' },
-})
-
-chalk.color('brand', 'Brand text') // → ['%cBrand text', 'color:#123456']
-chalk.bgColor('brand', 'Brand block') // → background with custom color
-```
-
 ## Custom Log Levels
+
+Extend the logger with additional methods using built-in color names:
 
 ```ts
 const chalk = createChalk({
   isDebug: true,
-  colors: { trace: '#123456' },
   logLevels: [
-    { name: 'trace', label: 'Trace', color: 'trace', method: 'debug' },
+    { name: 'trace', label: 'Trace', color: 'blue', method: 'debug' },
   ],
 })
 
-chalk.trace('details') // → [Trace] in custom color via console.debug
+chalk.trace('details') // → [Trace] in blue via console.debug
 ```
+
+`color` must be a built-in `ColorName`: `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`, `gray`.
 
 ## Banner & Image
 
@@ -121,14 +137,39 @@ chalk.hello('MyApp', '1.0.0') // styled title + version banner
 chalk.image('https://example.com/logo.png') // console CSS background image
 ```
 
+## API
+
+### `createChalk(options?)`
+
+| Option       | Type                        | Default                         | Description                           |
+| ------------ | --------------------------- | ------------------------------- | ------------------------------------- |
+| `console`    | `Console`                   | `globalThis.console`            | Console instance for output           |
+| `isDebug`    | `boolean \| (() => boolean)`| `() => globalThis.alitadebug`  | Debug gate for logger methods         |
+| `mode`       | `'foreground' \| 'background'` | `'background'`             | Logger output style                   |
+| `logLevels`  | `LogLevelDefinition[]`      | (built-in 8 levels)            | Custom logger level definitions       |
+
+### `getStyle(colors, name, mode)`
+
+Low-level utility to get CSS style string for a given color name and mode:
+
+```ts
+import { getStyle, DEFAULT_COLORS } from '@jacob-z/chalk'
+
+getStyle(DEFAULT_COLORS, 'red', 'foreground')
+// → 'color:#ed8796'
+
+getStyle(DEFAULT_COLORS, 'red', 'background')
+// → 'padding: 2px 4px; border-radius: 3px; color: #24273a; font-weight: bold; background:#ed8796;'
+```
+
 ## Architecture
 
 ```
 src/
-  types.ts    → All public & internal types
-  colors.ts   → Color map, CSS generation (pure functions)
-  format.ts   → %c format helpers, add(), bold()
-  logger.ts   → Debug-gated logger factory
+  types.ts    → All public & internal types (ChalkMode, ColorName, LogLevelDefinition)
+  colors.ts   → Macchiato palette, getStyle() (pure functions)
+  format.ts   → %c format helpers, add(), bold(), coloredText()
+  logger.ts   → Debug-gated logger factory (mode-aware)
   banner.ts   → hello(), image()
   create.ts   → createChalk() factory
   index.ts    → Default instance + re-exports
@@ -140,8 +181,8 @@ Design principles vs the original `@alita/chalk`:
 - **No global cache** — no `window.chalk` mutation
 - **No module-level side effects** — factory pattern, pure functions
 - **No `any` / `@ts-ignore`** — strict TypeScript throughout
-- **Modular & extensible** — custom colors, custom log levels, injected console
-- **Dark-mode friendly** — light foreground colors get a subtle background for readability
+- **Mode-driven styling** — single `mode` option controls all logger output
+- **Dark-mode friendly** — Catppuccin Macchiato palette with proper contrast
 
 ## License
 

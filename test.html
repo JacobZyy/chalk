@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@jacob-z/chalk Test Page</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --base: #24273a;
+      --surface0: #363a4f;
+      --surface1: #494d64;
+      --text: #cad3f5;
+      --subtext: #a5adcb;
+      --red: #ed8796;
+      --green: #a6da95;
+      --yellow: #eed49f;
+      --blue: #8aadf4;
+      --magenta: #c6a0f6;
+      --cyan: #8bd5ca;
+      --white: #cad3f5;
+      --gray: #6e738d;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--base);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 32px 16px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--subtext);
+      margin-bottom: 32px;
+    }
+
+    section {
+      max-width: 720px;
+      margin: 0 auto 28px;
+      background: var(--surface0);
+      border-radius: 12px;
+      padding: 20px 24px;
+    }
+
+    h2 {
+      font-size: 1rem;
+      color: var(--blue);
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button {
+      padding: 6px 14px;
+      border: 1px solid var(--surface1);
+      border-radius: 6px;
+      background: var(--surface1);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 13px;
+      font-family: inherit;
+      transition: border-color 0.15s, transform 0.1s;
+    }
+
+    button:hover { border-color: var(--blue); }
+    button:active { transform: scale(0.97); }
+
+    .output {
+      margin-top: 12px;
+      background: var(--base);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 13px;
+      min-height: 40px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .output .log-line {
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .output .log-line span.styled {
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+
+    .output .raw {
+      color: var(--gray);
+      font-size: 11px;
+      margin-left: 8px;
+    }
+
+    .debug-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .debug-toggle label {
+      font-size: 13px;
+      color: var(--subtext);
+      cursor: pointer;
+    }
+
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      appearance: none;
+      background: var(--surface1);
+      border-radius: 11px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle:checked { background: var(--green); }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--text);
+      transition: transform 0.2s;
+    }
+
+    .toggle:checked::after { transform: translateX(18px); }
+
+    .hint {
+      font-size: 12px;
+      color: var(--gray);
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>@jacob-z/chalk</h1>
+  <p class="subtitle">Browser Console Coloring Test Page &mdash; Open DevTools to see console output</p>
+
+  <!-- Foreground Colors -->
+  <section>
+    <h2>Foreground Colors</h2>
+    <div class="grid">
+      <button data-fn="fg" data-color="black">black</button>
+      <button data-fn="fg" data-color="red">red</button>
+      <button data-fn="fg" data-color="green">green</button>
+      <button data-fn="fg" data-color="yellow">yellow</button>
+      <button data-fn="fg" data-color="blue">blue</button>
+      <button data-fn="fg" data-color="magenta">magenta</button>
+      <button data-fn="fg" data-color="cyan">cyan</button>
+      <button data-fn="fg" data-color="white">white</button>
+      <button data-fn="fg" data-color="gray">gray</button>
+    </div>
+    <div class="output" id="fg-output"></div>
+  </section>
+
+  <!-- Background Colors -->
+  <section>
+    <h2>Background Colors</h2>
+    <div class="grid">
+      <button data-fn="bg" data-color="black">bgBlack</button>
+      <button data-fn="bg" data-color="red">bgRed</button>
+      <button data-fn="bg" data-color="green">bgGreen</button>
+      <button data-fn="bg" data-color="yellow">bgYellow</button>
+      <button data-fn="bg" data-color="blue">bgBlue</button>
+      <button data-fn="bg" data-color="magenta">bgMagenta</button>
+      <button data-fn="bg" data-color="cyan">bgCyan</button>
+      <button data-fn="bg" data-color="white">bgWhite</button>
+    </div>
+    <div class="output" id="bg-output"></div>
+  </section>
+
+  <!-- Formatting -->
+  <section>
+    <h2>Formatting &amp; Composition</h2>
+    <div class="grid">
+      <button data-fn="bold">bold</button>
+      <button data-fn="add">add(red + blue)</button>
+      <button data-fn="add-multi">add(red + bold + green)</button>
+    </div>
+    <div class="output" id="fmt-output"></div>
+  </section>
+
+  <!-- Logger -->
+  <section>
+    <h2>Logger Methods</h2>
+    <div class="debug-toggle">
+      <input type="checkbox" class="toggle" id="debug-toggle">
+      <label for="debug-toggle">Enable Debug (<code>globalThis.alitadebug</code>)</label>
+    </div>
+    <div class="grid">
+      <button data-fn="logger" data-level="log">log</button>
+      <button data-fn="logger" data-level="wait">wait</button>
+      <button data-fn="logger" data-level="error">error</button>
+      <button data-fn="logger" data-level="warn">warn</button>
+      <button data-fn="logger" data-level="ready">ready</button>
+      <button data-fn="logger" data-level="info">info</button>
+      <button data-fn="logger" data-level="event">event</button>
+      <button data-fn="logger" data-level="debug">debug</button>
+    </div>
+    <div class="output" id="logger-output"></div>
+    <p class="hint">Toggle debug ON first, then click to fire logger methods. Check DevTools console for output.</p>
+  </section>
+
+  <!-- Banner & Image -->
+  <section>
+    <h2>Banner &amp; Image</h2>
+    <div class="grid">
+      <button data-fn="hello">hello()</button>
+      <button data-fn="image">image()</button>
+    </div>
+    <div class="output" id="banner-output"></div>
+    <p class="hint">Check DevTools console — image() renders an image via CSS background.</p>
+  </section>
+
+  <!-- Mode Demo -->
+  <section>
+    <h2>Mode Switching (createChalk)</h2>
+    <div class="grid">
+      <button data-fn="mode-bg">background mode logger</button>
+      <button data-fn="mode-fg">foreground mode logger</button>
+    </div>
+    <div class="output" id="mode-output"></div>
+    <p class="hint">Creates separate chalk instances with different modes.</p>
+  </section>
+
+  <!-- Run All -->
+  <section>
+    <h2>Run All</h2>
+    <button data-fn="run-all" style="padding: 10px 28px; font-size: 14px; font-weight: 600;">
+      Run All Tests
+    </button>
+    <div class="output" id="all-output"></div>
+  </section>
+
+  <script type="module">
+    import chalk, { createChalk, add, bold } from './dist/index.mjs'
+
+    // --- helpers ---
+    function appendOutput(id, html) {
+      const el = document.getElementById(id)
+      const line = document.createElement('div')
+      line.className = 'log-line'
+      line.innerHTML = html
+      el.appendChild(line)
+      el.scrollTop = el.scrollHeight
+    }
+
+    function renderTuple(tuple, label) {
+      // tuple: ['%ctext', 'css1', 'css2', ...]
+      const template = tuple[0]
+      const styles = tuple.slice(1)
+      // parse segments from template like " %ctext %ctext"
+      const segments = template.split(' ').filter(Boolean)
+      let html = ''
+      for (let i = 0; i < segments.length; i++) {
+        const text = segments[i].replace('%c', '')
+        const style = styles[i] || ''
+        html += `<span class="styled" style="${style}">${text || '(empty)'}</span>`
+      }
+      html += `<span class="raw">${JSON.stringify(tuple)}</span>`
+      return html
+    }
+
+    function logToOutput(outputId, tuple, label) {
+      console.log(...tuple)
+      appendOutput(outputId, renderTuple(tuple, label))
+    }
+
+    // --- foreground colors ---
+    document.querySelectorAll('button[data-fn="fg"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const c = btn.dataset.color
+        const tuple = chalk[c](`Hello from ${c}`)
+        logToOutput('fg-output', tuple, c)
+      })
+    })
+
+    // --- background colors ---
+    document.querySelectorAll('button[data-fn="bg"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const c = btn.dataset.color
+        const fn = 'bg' + c.charAt(0).toUpperCase() + c.slice(1)
+        const tuple = chalk[fn](`Hello from ${fn}`)
+        logToOutput('bg-output', tuple, fn)
+      })
+    })
+
+    // --- formatting ---
+    document.querySelector('button[data-fn="bold"]')?.addEventListener('click', () => {
+      const tuple = bold('Bold text here')
+      logToOutput('fmt-output', tuple, 'bold')
+    })
+
+    document.querySelector('button[data-fn="add"]')?.addEventListener('click', () => {
+      const tuple = add(chalk.red('error:'), chalk.blue(' not found'))
+      logToOutput('fmt-output', tuple, 'add')
+    })
+
+    document.querySelector('button[data-fn="add-multi"]')?.addEventListener('click', () => {
+      const tuple = add(chalk.red('STOP'), bold(' critical '), chalk.green('GO'))
+      logToOutput('fmt-output', tuple, 'add-multi')
+    })
+
+    // --- debug toggle ---
+    const debugToggle = document.getElementById('debug-toggle')
+    debugToggle.addEventListener('change', () => {
+      globalThis.alitadebug = debugToggle.checked
+      appendOutput('logger-output',
+        `<span style="color:${debugToggle.checked ? 'var(--green)' : 'var(--red)'}">alitadebug = ${debugToggle.checked}</span>`)
+    })
+
+    // --- logger ---
+    document.querySelectorAll('button[data-fn="logger"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const level = btn.dataset.level
+        const msg = `This is a ${level} message at ${new Date().toLocaleTimeString()}`
+        chalk[level](msg)
+        appendOutput('logger-output',
+          `<span class="styled" style="color:var(--gray)">[${level}]</span> ${msg} <span class="raw">(check DevTools)</span>`)
+      })
+    })
+
+    // --- banner ---
+    document.querySelector('button[data-fn="hello"]')?.addEventListener('click', () => {
+      chalk.hello('@jacob-z/chalk', '1.1.0')
+      appendOutput('banner-output',
+        `<span class="styled" style="color:var(--green)">hello()</span> printed to console <span class="raw">(check DevTools)</span>`)
+    })
+
+    document.querySelector('button[data-fn="image"]')?.addEventListener('click', () => {
+      chalk.image('https://avatars.githubusercontent.com/u/17984567?v=4')
+      appendOutput('banner-output',
+        `<span class="styled" style="color:var(--magenta)">image()</span> printed to console <span class="raw">(check DevTools)</span>`)
+    })
+
+    // --- mode switching ---
+    const bgChalk = createChalk({ console, mode: 'background', isDebug: true })
+    const fgChalk = createChalk({ console, mode: 'foreground', isDebug: true })
+
+    document.querySelector('button[data-fn="mode-bg"]')?.addEventListener('click', () => {
+      bgChalk.ready('Background mode ready')
+      appendOutput('mode-output',
+        `<span class="styled" style="color:var(--green)">[background mode]</span> ready <span class="raw">(check DevTools)</span>`)
+    })
+
+    document.querySelector('button[data-fn="mode-fg"]')?.addEventListener('click', () => {
+      fgChalk.ready('Foreground mode ready')
+      appendOutput('mode-output',
+        `<span class="styled" style="color:var(--cyan)">[foreground mode]</span> ready <span class="raw">(check DevTools)</span>`)
+    })
+
+    // --- run all ---
+    document.querySelector('button[data-fn="run-all"]')?.addEventListener('click', () => {
+      const out = 'all-output'
+      const colors = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'gray']
+
+      // fg
+      colors.forEach(c => {
+        const tuple = chalk[c](`${c}`)
+        console.log(...tuple)
+        appendOutput(out, renderTuple(tuple, c))
+      })
+
+      // bg
+      colors.forEach(c => {
+        const fn = 'bg' + c.charAt(0).toUpperCase() + c.slice(1)
+        const tuple = chalk[fn](`${fn}`)
+        console.log(...tuple)
+        appendOutput(out, renderTuple(tuple, fn))
+      })
+
+      // bold + add
+      const boldTuple = bold('BOLD')
+      console.log(...boldTuple)
+      appendOutput(out, renderTuple(boldTuple, 'bold'))
+
+      const addTuple = add(chalk.red('red'), chalk.blue('blue'), chalk.green('green'))
+      console.log(...addTuple)
+      appendOutput(out, renderTuple(addTuple, 'add'))
+
+      // loggers
+      globalThis.alitadebug = true
+      debugToggle.checked = true
+      ;['log', 'wait', 'error', 'warn', 'ready', 'info', 'event', 'debug'].forEach(level => {
+        chalk[level](`test ${level}`)
+        appendOutput(out, `<span style="color:var(--gray)">[${level}]</span> test ${level} <span class="raw">(DevTools)</span>`)
+      })
+
+      // hello
+      chalk.hello('@jacob-z/chalk', '1.1.0')
+      appendOutput(out, `<span style="color:var(--green)">hello()</span> printed <span class="raw">(DevTools)</span>`)
+
+      // mode comparison
+      bgChalk.info('bg mode info')
+      fgChalk.info('fg mode info')
+      appendOutput(out, `<span style="color:var(--gray)">[mode comparison]</span> check DevTools`)
+    })
+  </script>
+</body>
+</html>
