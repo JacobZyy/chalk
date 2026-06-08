@@ -1,4 +1,4 @@
-import type { ChalkMode, ConsoleLike, ConsoleMethodName, DebugPredicate, LogHook, LogHookContext, LogLevelDefinition, LogMethod } from './types'
+import type { ChalkMode, ConsoleLike, ConsoleMethodName, LogHook, LogHookContext, LogLevelDefinition, LogMethod } from './types'
 import { DEFAULT_COLORS, getStyle } from './colors'
 
 export const DEFAULT_LOG_LEVELS = [
@@ -15,7 +15,6 @@ export const DEFAULT_LOG_LEVELS = [
 export interface CreateLoggerMethodsOptions {
   console: ConsoleLike
   mode: ChalkMode
-  isDebug: DebugPredicate
   logLevels?: readonly LogLevelDefinition[]
   getHooks: () => readonly LogHook[]
 }
@@ -26,19 +25,14 @@ function getConsoleMethod(consoleLike: ConsoleLike, method: ConsoleMethodName): 
 
 function createLogMethod(
   consoleLike: ConsoleLike,
-  isDebug: DebugPredicate,
   level: LogLevelDefinition,
   mode: ChalkMode,
   getHooks: () => readonly LogHook[],
 ): LogMethod {
   return (message: string, ...args: unknown[]): void => {
-    const debugValue = isDebug()
-
-    if (debugValue) {
-      const method = getConsoleMethod(consoleLike, level.method)
-      const style = getStyle(DEFAULT_COLORS, level.color, mode)
-      method(`%c[${level.label}]%c ${message}`, style, style, ...args)
-    }
+    const method = getConsoleMethod(consoleLike, level.method)
+    const style = getStyle(DEFAULT_COLORS, level.color, mode)
+    method(`%c[${level.label}]%c ${message}`, style, style, ...args)
 
     const hooks = getHooks()
     if (hooks.length > 0) {
@@ -47,7 +41,6 @@ function createLogMethod(
         label: level.label,
         message,
         args,
-        isDebug: debugValue,
       }
       for (const hook of hooks) {
         hook(ctx)
@@ -61,7 +54,7 @@ export function createLoggerMethods(options: CreateLoggerMethodsOptions): Record
   return Object.fromEntries(
     levels.map(level => [
       level.name,
-      createLogMethod(options.console, options.isDebug, level, options.mode, options.getHooks),
+      createLogMethod(options.console, level, options.mode, options.getHooks),
     ]),
   )
 }

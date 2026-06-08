@@ -10,7 +10,7 @@ Browser console coloring utilities — a modular, type-safe rewrite of `@alita/c
 - Mode switching (`foreground` / `background`) controls logger output style globally
 - `bold()` text formatting
 - `add()` for merging multiple formatted tuples
-- Debug-gated logger methods: `log`, `wait`, `error`, `warn`, `ready`, `info`, `event`, `debug`
+- Logger methods: `log`, `wait`, `error`, `warn`, `ready`, `info`, `event`, `debug`
 - `hello(title, version)` version banner
 - `image(url)` console image
 - `createChalk(options?)` factory for dependency injection
@@ -64,8 +64,8 @@ These are fixed regardless of the `mode` setting. Mode only affects logger outpu
 ```ts
 import { createChalk } from '@jacob-z/chalk'
 
-const bgChalk = createChalk({ console, mode: 'background', isDebug: true })
-const fgChalk = createChalk({ console, mode: 'foreground', isDebug: true })
+const bgChalk = createChalk({ console, mode: 'background' })
+const fgChalk = createChalk({ console, mode: 'foreground' })
 
 // background mode: label + message share same styled background
 bgChalk.info('loaded')
@@ -77,26 +77,6 @@ fgChalk.info('loaded')
 ```
 
 Logger label and message body use the **same style** — no separate styling for the tag vs the content.
-
-## Debug Logging
-
-Logger methods only print when debugging is enabled. By default they read `globalThis.alitadebug`:
-
-```ts
-globalThis.alitadebug = true
-
-chalk.ready('server started') // prints [Ready] in green
-chalk.error('failed') // prints [Error] in red
-```
-
-For tests or controlled environments, use the factory:
-
-```ts
-import { createChalk } from '@jacob-z/chalk'
-
-const chalk = createChalk({ console, isDebug: () => true })
-chalk.info('loaded')
-```
 
 ## Logger Methods
 
@@ -119,7 +99,6 @@ Extend the logger with additional methods using built-in color names:
 
 ```ts
 const chalk = createChalk({
-  isDebug: true,
   logLevels: [
     { name: 'trace', label: 'Trace', color: 'blue', method: 'debug' },
   ],
@@ -144,7 +123,6 @@ chalk.image('https://example.com/logo.png') // console CSS background image
 | Option       | Type                        | Default                         | Description                           |
 | ------------ | --------------------------- | ------------------------------- | ------------------------------------- |
 | `console`    | `Console`                   | `globalThis.console`            | Console instance for output           |
-| `isDebug`    | `boolean \| (() => boolean)`| `() => globalThis.alitadebug`  | Debug gate for logger methods         |
 | `mode`       | `'foreground' \| 'background'` | `'background'`             | Logger output style                   |
 | `logLevels`  | `LogLevelDefinition[]`      | (built-in 8 levels)            | Custom logger level definitions       |
 

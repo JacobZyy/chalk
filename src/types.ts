@@ -27,8 +27,6 @@ export type ColorMap = Readonly<Record<ColorName, string>>
 
 export type ChalkMode = 'foreground' | 'background'
 
-export type DebugPredicate = () => boolean
-
 export interface LogLevelDefinition {
   name: string
   label: string
@@ -39,7 +37,6 @@ export interface LogLevelDefinition {
 export interface CreateChalkOptions {
   console?: ConsoleLike
   mode?: ChalkMode
-  isDebug?: boolean | DebugPredicate
   logLevels?: readonly LogLevelDefinition[]
 }
 
@@ -52,7 +49,6 @@ export interface LogHookContext {
   label: string
   message: string
   args: unknown[]
-  isDebug: boolean
 }
 
 export type LogHook = (ctx: LogHookContext) => void

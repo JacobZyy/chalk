@@ -1,4 +1,4 @@
-import type { ChalkInstance, ConsoleLike, CreateChalkOptions, DebugPredicate, LogHook } from './types'
+import type { ChalkInstance, ConsoleLike, CreateChalkOptions, LogHook } from './types'
 import { createBannerMethods } from './banner'
 import { add, bold, coloredText } from './format'
 import { createLoggerMethods } from './logger'
@@ -7,34 +7,19 @@ const noopConsole: ConsoleLike = {
   log: () => {},
 }
 
-function readGlobalDebugFlag(): boolean {
-  return Object.prototype.hasOwnProperty.call(globalThis, 'alitadebug')
-    && Boolean(globalThis.alitadebug)
-}
-
 function resolveConsole(consoleLike: ConsoleLike | undefined): ConsoleLike {
   return consoleLike ?? globalThis.console ?? noopConsole
-}
-
-function resolveDebugPredicate(isDebug: CreateChalkOptions['isDebug']): DebugPredicate {
-  if (typeof isDebug === 'function')
-    return isDebug
-  if (typeof isDebug === 'boolean')
-    return () => isDebug
-  return readGlobalDebugFlag
 }
 
 export function createChalk(options: CreateChalkOptions = {}): ChalkInstance {
   const consoleLike = resolveConsole(options.console)
   const mode = options.mode ?? 'background'
-  const isDebug = resolveDebugPredicate(options.isDebug)
-  const banner = createBannerMethods(consoleLike, isDebug)
+  const banner = createBannerMethods(consoleLike)
   const hooks: LogHook[] = []
   const getHooks = (): readonly LogHook[] => hooks
   const loggers = createLoggerMethods({
     console: consoleLike,
     mode,
-    isDebug,
     logLevels: options.logLevels,
     getHooks,
   })

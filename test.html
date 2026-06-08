@@ -110,46 +110,6 @@
       margin-left: 8px;
     }
 
-    .debug-toggle {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .debug-toggle label {
-      font-size: 13px;
-      color: var(--subtext);
-      cursor: pointer;
-    }
-
-    .toggle {
-      position: relative;
-      width: 40px;
-      height: 22px;
-      appearance: none;
-      background: var(--surface1);
-      border-radius: 11px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .toggle:checked { background: var(--green); }
-
-    .toggle::after {
-      content: '';
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: var(--text);
-      transition: transform 0.2s;
-    }
-
-    .toggle:checked::after { transform: translateX(18px); }
-
     .hint {
       font-size: 12px;
       color: var(--gray);
@@ -208,10 +168,6 @@
   <!-- Logger -->
   <section>
     <h2>Logger Methods</h2>
-    <div class="debug-toggle">
-      <input type="checkbox" class="toggle" id="debug-toggle">
-      <label for="debug-toggle">Enable Debug (<code>globalThis.alitadebug</code>)</label>
-    </div>
     <div class="grid">
       <button data-fn="logger" data-level="log">log</button>
       <button data-fn="logger" data-level="wait">wait</button>
@@ -223,7 +179,7 @@
       <button data-fn="logger" data-level="debug">debug</button>
     </div>
     <div class="output" id="logger-output"></div>
-    <p class="hint">Toggle debug ON first, then click to fire logger methods. Check DevTools console for output.</p>
+    <p class="hint">Click to fire logger methods. Check DevTools console for output.</p>
   </section>
 
   <!-- Banner & Image -->
@@ -326,14 +282,6 @@
       logToOutput('fmt-output', tuple, 'add-multi')
     })
 
-    // --- debug toggle ---
-    const debugToggle = document.getElementById('debug-toggle')
-    debugToggle.addEventListener('change', () => {
-      globalThis.alitadebug = debugToggle.checked
-      appendOutput('logger-output',
-        `<span style="color:${debugToggle.checked ? 'var(--green)' : 'var(--red)'}">alitadebug = ${debugToggle.checked}</span>`)
-    })
-
     // --- logger ---
     document.querySelectorAll('button[data-fn="logger"]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -359,8 +307,8 @@
     })
 
     // --- mode switching ---
-    const bgChalk = createChalk({ console, mode: 'background', isDebug: true })
-    const fgChalk = createChalk({ console, mode: 'foreground', isDebug: true })
+    const bgChalk = createChalk({ console, mode: 'background' })
+    const fgChalk = createChalk({ console, mode: 'foreground' })
 
     document.querySelector('button[data-fn="mode-bg"]')?.addEventListener('click', () => {
       bgChalk.ready('Background mode ready')
@@ -404,8 +352,6 @@
       appendOutput(out, renderTuple(addTuple, 'add'))
 
       // loggers
-      globalThis.alitadebug = true
-      debugToggle.checked = true
       ;['log', 'wait', 'error', 'warn', 'ready', 'info', 'event', 'debug'].forEach(level => {
         chalk[level](`test ${level}`)
         appendOutput(out, `<span style="color:var(--gray)">[${level}]</span> test ${level} <span class="raw">(DevTools)</span>`)
